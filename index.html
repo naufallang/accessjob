@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Access Job Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: dark forest sidebar + cream workspace, same palette as the Access Job deck. Single light theme by choice. */
+:root{
+  --ink:#0c1109;
+  --moss:#4e5f43;
+  --cream:#d6d3ce;
+  --paper:#f4f2ee;
+  --card:#ffffff;
+  --line:#d9d5cd;
+  --muted:#5c6355;
+  --ok:#2f7a4b; --ok-bg:#e3f0e6;
+  --warn:#9a6411; --warn-bg:#f6ecd9;
+  --bad:#a93636; --bad-bg:#f6e1e1;
+  --info:#355f80; --info-bg:#e1ebf3;
+  --display:"Gilda Display", Georgia, "Times New Roman", serif;
+  --body:"Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius:12px;
+  color-scheme:light;
+}
+:root[data-contrast="high"]{
+  --ink:#000; --moss:#1d2a14; --cream:#ffffff; --paper:#ffffff; --card:#ffffff;
+  --line:#000; --muted:#1a1a1a;
+  --ok:#0b5a2a; --warn:#6b4300; --bad:#7d0000; --info:#0b3a5e;
+}
+*{box-sizing:border-box}
+html,body,#root{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+:root[data-reduce-motion="true"] *{transition:none!important;animation:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid #c9a227;outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--display);font-weight:400;font-size:2rem;line-height:1.15}
+h2{font-family:var(--display);font-weight:400;font-size:1.45rem;line-height:1.2}
+h3{font-size:1rem;font-weight:600}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.84rem}
+i[data-lucide]{display:inline-flex;width:18px;height:18px}
+svg.lucide{width:18px;height:18px;stroke-width:2}
+
+/* Shell */
+.app{display:grid;grid-template-columns:248px 1fr;height:100%}
+.side{background:linear-gradient(180deg,#0c1109 0%,#26311f 60%,#4e5f43 100%);color:#e9e6df;display:flex;flex-direction:column;padding:22px 14px;gap:18px;overflow-y:auto}
+:root[data-contrast="high"] .side{background:#000;color:#fff}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.leaf{width:26px;height:26px;background:var(--cream);border-radius:0 60% 0 60%}
+.brand b{font-family:var(--display);font-weight:400;font-size:1.35rem;letter-spacing:.01em}
+.who{background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+.who .av{background:var(--cream);color:var(--ink)}
+.who small{display:block;opacity:.75;font-size:.75rem}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;font-size:.92rem;color:#dcd8cf}
+.nav button:hover{background:rgba(255,255,255,.08)}
+.nav button[aria-current="page"]{background:var(--cream);color:var(--ink);font-weight:600}
+.nav button:focus-visible{outline:3px solid #c9a227}
+.nav .count{margin-left:auto;background:#c9a227;color:#0c1109;font-size:.7rem;font-weight:700;border-radius:99px;padding:1px 7px}
+.side .foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.side .foot label{font-size:.75rem;opacity:.8;padding:0 4px}
+.side select{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px}
+.side select option{color:#000}
+
+.main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.top{display:flex;align-items:center;gap:12px;padding:14px 28px;border-bottom:1px solid var(--line);background:var(--paper)}
+.top .crumb{font-size:.85rem;color:var(--muted)}
+.top .sp{flex:1}
+.iconbtn{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;width:40px;height:40px;display:grid;place-items:center;cursor:pointer}
+.iconbtn .dot{position:absolute;top:-4px;right:-4px;background:var(--bad);color:#fff;font-size:.65rem;font-weight:700;border-radius:99px;min-width:18px;height:18px;display:grid;place-items:center;padding:0 4px}
+.content{flex:1;overflow-y:auto;padding:26px 28px 60px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+
+/* Building blocks */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;gap:10px}
+.between{justify-content:space-between}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:10px 16px;font-weight:600;font-size:.9rem;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+.btn:hover{background:var(--moss);border-color:var(--moss)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink);background:var(--card)}
+.btn.ok{background:var(--ok);border-color:var(--ok)}
+.btn.bad{background:transparent;color:var(--bad);border-color:var(--bad)}
+.btn.sm{padding:6px 11px;font-size:.8rem;border-radius:8px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.link{all:unset;cursor:pointer;color:var(--moss);font-weight:600;font-size:.88rem}
+.link:hover{text-decoration:underline}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:.75rem;font-weight:600;white-space:nowrap}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-bad{background:var(--bad-bg);color:var(--bad)}
+.p-info{background:var(--info-bg);color:var(--info)}
+.p-neutral{background:#ebe8e2;color:var(--muted)}
+:root[data-contrast="high"] .pill{border:1px solid currentColor;background:#fff}
+.pill svg.lucide{width:13px;height:13px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:5px 11px;font-size:.8rem;background:var(--card)}
+.chip svg.lucide{width:14px;height:14px;color:var(--moss)}
+.av{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:.85rem;flex:none}
+.logo{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);font-size:1.25rem;color:#fff;flex:none}
+.stat{display:flex;flex-direction:column;gap:4px}
+.stat b{font-size:1.7rem;font-weight:600;line-height:1}
+.hello{background:linear-gradient(110deg,#0c1109,#4e5f43);color:#f1eee8;border-radius:16px;padding:26px 28px;display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}
+:root[data-contrast="high"] .hello{background:#000}
+.hello h1{color:#fff}
+.hello .btn{background:var(--cream);color:var(--ink);border-color:var(--cream)}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.job{display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:border-color .15s}
+.job:hover{border-color:var(--moss)}
+.job .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.job .title{font-weight:600;font-size:1rem}
+.meta{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+.meta span{display:inline-flex;align-items:center;gap:5px}
+.meta svg.lucide{width:14px;height:14px}
+.match{min-width:64px;text-align:center;border-radius:10px;padding:8px 6px;background:var(--paper);border:1px solid var(--line)}
+.match b{display:block;font-size:1.15rem}
+.match small{font-size:.68rem;color:var(--muted)}
+.savebtn{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px}
+.savebtn[aria-pressed="true"]{color:var(--moss)}
+.savebtn[aria-pressed="true"] svg{fill:currentColor}
+.layout-search{display:grid;grid-template-columns:270px 1fr;gap:20px;align-items:start}
+.filters{position:sticky;top:0;display:flex;flex-direction:column;gap:16px}
+.filters fieldset{border:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.filters legend{font-weight:600;font-size:.85rem;margin-bottom:6px}
+.check{display:flex;gap:9px;align-items:center;font-size:.88rem;cursor:pointer}
+.check input{width:17px;height:17px;accent-color:var(--moss)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:.84rem;font-weight:600}
+.input,select.input,textarea.input{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;width:100%}
+.input:focus{border-color:var(--moss)}
+textarea.input{min-height:96px;resize:vertical}
+.searchbar{display:flex;gap:10px}
+.searchbar .input{flex:1}
+.fac-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.photo{aspect-ratio:4/3;border-radius:10px;display:grid;place-items:center;color:#fff;position:relative;overflow:hidden;background:repeating-linear-gradient(135deg,#4e5f43 0 14px,#55684a 14px 28px)}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo svg.lucide{width:34px;height:34px;opacity:.9}
+.photo .cap{position:absolute;left:8px;bottom:8px;right:8px;font-size:.72rem;background:rgba(12,17,9,.7);border-radius:6px;padding:3px 7px}
+.steps{display:flex;gap:8px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--muted)}
+.step .n{width:26px;height:26px;border-radius:99px;display:grid;place-items:center;border:1px solid var(--line);font-weight:600;background:var(--card)}
+.step.on{color:var(--ink);font-weight:600}
+.step.on .n{background:var(--ink);color:#fff;border-color:var(--ink)}
+.step.done .n{background:var(--ok);color:#fff;border-color:var(--ok)}
+.step .bar{width:34px;height:2px;background:var(--line)}
+.timeline{display:flex;gap:0;margin-top:6px}
+.tl{flex:1;display:flex;flex-direction:column;gap:6px;font-size:.75rem;color:var(--muted);position:relative}
+.tl .d{height:6px;border-radius:99px;background:var(--line)}
+.tl.done .d{background:var(--moss)}
+.tl.cur .d{background:var(--ink)}
+.tl.fail .d{background:var(--bad)}
+.tl.done,.tl.cur{color:var(--ink)}
+.tl+.tl{margin-left:6px}
+.table{width:100%;border-collapse:collapse;font-size:.88rem}
+.table th{text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line)}
+.table td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.tablewrap{overflow-x:auto}
+.chat{display:grid;grid-template-columns:280px 1fr;min-height:520px;padding:0;overflow:hidden}
+.threads{border-right:1px solid var(--line);display:flex;flex-direction:column}
+.thread{all:unset;cursor:pointer;display:flex;gap:10px;padding:14px;border-bottom:1px solid var(--line)}
+.thread[aria-current="true"]{background:var(--paper)}
+.thread .t{flex:1;min-width:0}
+.thread .t p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8rem;color:var(--muted)}
+.conv{display:flex;flex-direction:column}
+.conv .msgs{flex:1;padding:18px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:440px}
+.bubble{max-width:72%;padding:10px 14px;border-radius:14px;font-size:.88rem;background:var(--paper);border:1px solid var(--line)}
+.bubble.me{align-self:flex-end;background:var(--ink);color:#fff;border-color:var(--ink)}
+.bubble small{display:block;opacity:.7;font-size:.7rem;margin-top:3px}
+.composer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.toggle{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.toggle:last-child{border-bottom:none}
+.switch{position:relative;width:46px;height:26px;flex:none}
+.switch input{opacity:0;width:100%;height:100%;margin:0;position:absolute;cursor:pointer;z-index:1}
+.switch span{position:absolute;inset:0;background:#c9c5bd;border-radius:99px;transition:.2s}
+.switch span::after{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:99px;transition:.2s}
+.switch input:checked+span{background:var(--moss)}
+.switch input:checked+span::after{transform:translateX(20px)}
+.switch input:focus-visible+span{outline:3px solid #c9a227;outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:none;background:var(--card);padding:7px 13px;cursor:pointer;font-size:.85rem}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:.9rem;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:50}
+.drop{position:absolute;right:28px;top:64px;width:340px;z-index:40;box-shadow:0 14px 40px rgba(0,0,0,.16);max-height:420px;overflow-y:auto;padding:6px}
+.drop .n-item{padding:12px;border-bottom:1px solid var(--line);font-size:.86rem}
+.drop .n-item:last-child{border:none}
+.success{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 20px}
+.success .big{width:64px;height:64px;border-radius:99px;background:var(--ok-bg);color:var(--ok);display:grid;place-items:center}
+.success .big svg.lucide{width:32px;height:32px}
+.checklist{display:flex;flex-direction:column;gap:10px}
+.note{border-left:3px solid var(--moss);background:var(--paper);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.86rem}
+.req li{margin-bottom:4px}
+.tag-skill{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:.78rem}
+
+/* Login */
+.login{min-height:100%;display:grid;grid-template-columns:1.05fr 1fr}
+.login .art{background:linear-gradient(160deg,#0c1109,#4e5f43);color:#eeeae3;padding:48px;display:flex;flex-direction:column;justify-content:space-between;gap:30px;position:relative;overflow:hidden}
+.login .art h1{font-size:3.2rem;color:#fff}
+.login .art .shape{position:absolute;right:-60px;bottom:-60px;width:320px;height:320px;background:var(--cream);opacity:.16;border-radius:0 60% 0 60%}
+.login .form{padding:48px;display:flex;flex-direction:column;justify-content:center;gap:20px;max-width:520px;margin:0 auto;width:100%}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.role{all:unset;cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;font-size:.85rem}
+.role b{font-size:.92rem}
+.role[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.role:focus-visible{outline:3px solid #c9a227}
+
+@media (max-width:980px){
+  .layout-search{grid-template-columns:1fr}
+  .filters{position:static}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:1fr 1fr}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .side{flex-direction:row;align-items:center;padding:10px 12px;gap:10px;overflow-x:auto}
+  .side .who,.side .foot label{display:none}
+  .nav{flex-direction:row}
+  .nav button{padding:8px 10px;white-space:nowrap}
+  .nav button span.lbl{display:none}
+  .side .foot{margin:0;flex-direction:row}
+  .top{padding:12px 16px}
+  .content{padding:18px 16px 60px}
+  .g2,.g3{grid-template-columns:1fr}
+  .chat{grid-template-columns:1fr}
+  .threads{border-right:none;border-bottom:1px solid var(--line)}
+  .login{grid-template-columns:1fr}
+  .login .art{padding:28px}
+  .login .art h1{font-size:2.3rem}
+  .login .form{padding:28px 18px}
+  .fac-grid{grid-template-columns:1fr 1fr}
+  .drop{right:12px;left:12px;width:auto}
+}
+@media (max-width:420px){.roles{grid-template-columns:1fr}.g4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="live" class="sr" aria-live="polite" style="position:absolute;left:-9999px"></div>
+<script>
+/* ================= DATA (contoh) ================= */
+const FAC = {
+  ramp:{label:"Ramp & akses kursi roda", icon:"accessibility"},
+  toilet:{label:"Toilet aksesibel", icon:"bath"},
+  lift:{label:"Lift", icon:"move-vertical"},
+  reader:{label:"Software pembaca layar", icon:"volume-2"},
+  isyarat:{label:"Juru bahasa isyarat", icon:"hand"},
+  flex:{label:"Jam kerja fleksibel", icon:"clock"},
+  parkir:{label:"Parkir disabilitas", icon:"car"},
+  remote:{label:"Perangkat kerja remote", icon:"laptop"}
+};
+const STATUSES = ["Dikirim","Ditinjau","Interview","Diterima"];
+
+const companies = {
+  arunika:{name:"Arunika Data", city:"Jakarta Barat", color:"#4e5f43", about:"Perusahaan pengolahan data dengan 120 karyawan, 14 di antaranya penyandang disabilitas.",
+    facilities:[{key:"ramp",status:"verified",date:"12 Okt 2026"},{key:"toilet",status:"verified",date:"12 Okt 2026"},{key:"lift",status:"verified",date:"12 Okt 2026"},{key:"reader",status:"verified",date:"12 Okt 2026"},{key:"flex",status:"verified",date:"12 Okt 2026"}]},
+  lumbung:{name:"Studio Lumbung", city:"Bandung", color:"#8a6a3b", about:"Studio desain kecil yang bekerja hybrid dan remote.",
+    facilities:[{key:"remote",status:"verified",date:"3 Sep 2026"},{key:"isyarat",status:"verified",date:"3 Sep 2026"},{key:"flex",status:"verified",date:"3 Sep 2026"}]},
+  sejahtera:{name:"Toko Sejahtera", city:"Surabaya", color:"#7a3f3f", about:"UMKM retail online yang sedang membuka tim admin.",
+    facilities:[{key:"ramp",status:"pending",date:"-"},{key:"toilet",status:"pending",date:"-"},{key:"flex",status:"pending",date:"-"}]},
+  finara:{name:"Finara", city:"Jakarta Selatan", color:"#355f80", about:"Perusahaan fintech dengan layanan pelanggan 24 jam.",
+    facilities:[{key:"remote",status:"verified",date:"20 Agu 2026"},{key:"reader",status:"verified",date:"20 Agu 2026"},{key:"isyarat",status:"pending",date:"-"}]},
+  senyap:{name:"Kedai Senyap", city:"Jakarta Selatan", color:"#2f4f4f", about:"Kedai kopi yang dijalankan bersama barista Tuli.",
+    facilities:[{key:"isyarat",status:"verified",date:"1 Sep 2026"},{key:"toilet",status:"verified",date:"1 Sep 2026"}]},
+  nusantara:{name:"Nusantara Logistik", city:"Bekasi", color:"#5b4a6b", about:"Perusahaan gudang dan distribusi.",
+    facilities:[{key:"ramp",status:"verified",date:"9 Okt 2026"},{key:"parkir",status:"verified",date:"9 Okt 2026"},{key:"lift",status:"verified",date:"9 Okt 2026"},{key:"toilet",status:"verified",date:"9 Okt 2026"}]}
+};
+
+let jobs = [
+  {id:"j1", title:"Data Entry Staff", co:"arunika", mode:"Remote", loc:"Jakarta Barat", salary:"Rp4,5 – 5,5 jt", type:"Full-time", posted:"2 hari lalu",
+   fac:["ramp","toilet","reader","flex"], skills:["Excel","Input Data","Ketelitian"], fit:["Fisik","Netra","Tuli"],
+   desc:"Menginput dan merapikan data pelanggan ke sistem internal, lalu memeriksa ulang data agar tidak ada yang ganda.",
+   req:["Lulusan SMA/SMK/D3 semua jurusan","Terbiasa memakai Excel atau Google Sheets","Teliti dan bisa bekerja dengan target harian"]},
+  {id:"j2", title:"Junior QA Tester", co:"arunika", mode:"Hybrid", loc:"Jakarta Barat", salary:"Rp6 – 7,5 jt", type:"Full-time", posted:"5 hari lalu",
+   fac:["ramp","toilet","lift","reader","flex"], skills:["Testing","Ketelitian","Excel"], fit:["Fisik","Tuli"],
+   desc:"Menguji fitur aplikasi sebelum rilis, mencatat bug, dan memastikan aplikasi bisa dipakai pengguna disabilitas.",
+   req:["Paham dasar penggunaan aplikasi web dan mobile","Bisa menulis laporan bug yang jelas","Nilai plus: paham standar aksesibilitas WCAG"]},
+  {id:"j3", title:"Desainer Grafis", co:"lumbung", mode:"Hybrid", loc:"Bandung", salary:"Rp5 – 6 jt", type:"Kontrak", posted:"1 hari lalu",
+   fac:["remote","isyarat","flex"], skills:["Canva","Figma","Komunikasi"], fit:["Fisik","Tuli"],
+   desc:"Membuat materi visual untuk media sosial dan presentasi klien.",
+   req:["Portofolio desain minimal 5 karya","Menguasai Canva atau Figma","Bisa bekerja sama lewat chat dan video call"]},
+  {id:"j4", title:"Admin Media Sosial", co:"sejahtera", mode:"Remote", loc:"Surabaya", salary:"Rp3,8 – 4,5 jt", type:"Full-time", posted:"3 hari lalu",
+   fac:["flex"], skills:["Canva","Komunikasi","Copywriting"], fit:["Fisik","Netra","Tuli"],
+   desc:"Mengelola akun Instagram dan TikTok toko, membalas pesan pelanggan, dan membuat jadwal konten.",
+   req:["Aktif memakai Instagram dan TikTok","Bisa membuat konten sederhana di Canva","Komunikatif secara tulisan"]},
+  {id:"j5", title:"Customer Service Chat", co:"finara", mode:"Remote", loc:"Jakarta Selatan", salary:"Rp5 – 6 jt", type:"Full-time", posted:"1 minggu lalu",
+   fac:["remote","reader"], skills:["Komunikasi","Excel","Input Data"], fit:["Fisik","Netra","Tuli"],
+   desc:"Menjawab pertanyaan nasabah lewat chat aplikasi dan mencatat keluhan ke sistem tiket.",
+   req:["Mengetik cepat dan rapi","Sabar dan ramah","Bersedia kerja shift"]},
+  {id:"j6", title:"Barista", co:"senyap", mode:"Onsite", loc:"Jakarta Selatan", salary:"Rp4 – 4,8 jt", type:"Full-time", posted:"4 hari lalu",
+   fac:["isyarat","toilet"], skills:["Pelayanan","Kopi"], fit:["Tuli"],
+   desc:"Meracik kopi dan melayani pelanggan dengan bantuan menu visual dan bahasa isyarat.",
+   req:["Pengalaman barista diutamakan, pelatihan disediakan","Bisa BISINDO atau mau belajar"]},
+  {id:"j7", title:"Staf Gudang Inventaris", co:"nusantara", mode:"Onsite", loc:"Bekasi", salary:"Rp4,9 – 5,3 jt", type:"Full-time", posted:"6 hari lalu",
+   fac:["ramp","parkir","lift","toilet"], skills:["Input Data","Excel","Ketelitian"], fit:["Fisik","Tuli"],
+   desc:"Mencatat barang masuk dan keluar memakai scanner dan tablet, area kerja sudah bisa diakses kursi roda.",
+   req:["Terbiasa dengan aplikasi stok atau Excel","Teliti dalam pencatatan"]},
+  {id:"j8", title:"Penulis Konten", co:"lumbung", mode:"Remote", loc:"Bandung", salary:"Rp4 – 5 jt", type:"Magang", posted:"2 hari lalu",
+   fac:["remote","flex"], skills:["Copywriting","Komunikasi"], fit:["Fisik","Netra","Tuli"],
+   desc:"Menulis caption, artikel blog, dan naskah video pendek untuk klien studio.",
+   req:["Contoh tulisan minimal 3","Bisa riset sederhana"]}
+];
+
+const talents = {
+  rina:{name:"Rina Putri", short:"RP", color:"#c9a227", city:"Jakarta Timur", edu:"D3 Administrasi Bisnis", disab:"Disabilitas fisik (pengguna kursi roda)",
+    skills:["Excel","Input Data","Canva","Komunikasi","Ketelitian"], needs:["ramp","toilet"], pref:["Remote","Hybrid"],
+    about:"Lulusan D3 yang suka pekerjaan rapi dan berbasis data. Dua tahun magang sebagai admin di koperasi.", cv:"CV_Rina_Putri_2026.pdf"},
+  bagas:{name:"Bagas Pratama", short:"BP", color:"#8fb3c9", city:"Tangerang", edu:"S1 Sistem Informasi", disab:"Tuli",
+    skills:["Testing","Excel","Ketelitian","Figma"], needs:["isyarat","flex"], pref:["Hybrid"], about:"Fresh graduate SI, aktif di komunitas tester.", cv:"CV_Bagas.pdf"},
+  sinta:{name:"Sinta Wulandari", short:"SW", color:"#d6a6a6", city:"Jakarta Barat", edu:"SMK Akuntansi", disab:"Disabilitas netra (low vision)",
+    skills:["Input Data","Excel","Komunikasi"], needs:["reader","flex"], pref:["Remote"], about:"Terbiasa memakai NVDA dan pintasan keyboard.", cv:"CV_Sinta.pdf"},
+  dimas:{name:"Dimas Arya", short:"DA", color:"#b9c79a", city:"Depok", edu:"D3 Teknik Informatika", disab:"Disabilitas fisik",
+    skills:["Testing","Input Data"], needs:["ramp","lift"], pref:["Hybrid","Onsite"], about:"Pernah kerja kontrak sebagai operator data.", cv:"CV_Dimas.pdf"}
+};
+
+let apps = [
+  {id:"a1", job:"j4", tal:"rina", status:"Ditinjau", date:"10 Nov 2026", history:{Dikirim:"10 Nov",Ditinjau:"12 Nov"}, acc:"Butuh jam kerja fleksibel untuk jadwal terapi."},
+  {id:"a2", job:"j5", tal:"rina", status:"Interview", date:"4 Nov 2026", history:{Dikirim:"4 Nov",Ditinjau:"6 Nov",Interview:"14 Nov"}, acc:"", interview:"Jumat, 21 Nov 2026 · 10.00 WIB · Google Meet (teks otomatis aktif)"},
+  {id:"a3", job:"j2", tal:"bagas", status:"Ditinjau", date:"13 Nov 2026", history:{Dikirim:"13 Nov",Ditinjau:"14 Nov"}, acc:"Interview mohon disediakan juru bahasa isyarat."},
+  {id:"a4", job:"j1", tal:"sinta", status:"Dikirim", date:"16 Nov 2026", history:{Dikirim:"16 Nov"}, acc:"Mohon dokumen tes dalam format yang bisa dibaca screen reader."},
+  {id:"a5", job:"j2", tal:"dimas", status:"Interview", date:"8 Nov 2026", history:{Dikirim:"8 Nov",Ditinjau:"9 Nov",Interview:"15 Nov"}, acc:"", interview:"Senin, 24 Nov 2026 · 13.00 WIB · Kantor Arunika lt. 1"}
+];
+
+let threads = [
+  {id:"t1", co:"finara", tal:"rina", msgs:[
+    {from:"co", text:"Halo Rina, terima kasih sudah melamar Customer Service Chat. Kami ingin mengundang interview online.", time:"14 Nov, 09.12"},
+    {from:"tal", text:"Terima kasih, saya bersedia. Apakah interviewnya memakai teks otomatis?", time:"14 Nov, 09.30"},
+    {from:"co", text:"Bisa, Google Meet dengan teks otomatis aktif. Jadwal Jumat 21 Nov jam 10.00 ya.", time:"14 Nov, 10.02"}]},
+  {id:"t2", co:"sejahtera", tal:"rina", msgs:[{from:"co", text:"Lamaran kamu sedang kami tinjau, kabar paling lambat minggu depan.", time:"12 Nov, 15.40"}]},
+  {id:"t3", co:"arunika", tal:"bagas", msgs:[
+    {from:"tal", text:"Selamat siang, saya Bagas. Apakah interview bisa disediakan juru bahasa isyarat?", time:"14 Nov, 11.00"},
+    {from:"co", text:"Bisa, Mas Bagas. Kami sudah kerja sama dengan juru bahasa BISINDO.", time:"14 Nov, 11.25"}]},
+  {id:"t4", co:"arunika", tal:"dimas", msgs:[{from:"co", text:"Interview di kantor lt. 1, akses ramp dari lobi samping ya.", time:"15 Nov, 16.10"}]}
+];
+
+let verifQueue = [
+  {id:"v1", co:"sejahtera", items:["ramp","toilet","flex"], submitted:"15 Nov 2026", photos:3, status:"pending", note:"Toko di lantai dasar, ramp baru dipasang Oktober."},
+  {id:"v2", co:"finara", items:["isyarat"], submitted:"16 Nov 2026", photos:1, status:"pending", note:"Kontrak juru bahasa isyarat dengan lembaga mitra, dokumen terlampir."}
+];
+
+let notifs = {
+  talent:[{text:"Finara mengundang kamu interview pada 21 Nov.", time:"14 Nov"},{text:"Toko Sejahtera sedang meninjau lamaranmu.", time:"12 Nov"},{text:"3 lowongan baru cocok dengan profilmu.", time:"Hari ini"}],
+  company:[{text:"Sinta Wulandari melamar Data Entry Staff.", time:"16 Nov"},{text:"Bagas Pratama mengirim pesan.", time:"14 Nov"}],
+  verifier:[{text:"Finara mengajukan verifikasi juru bahasa isyarat.", time:"16 Nov"},{text:"Toko Sejahtera mengajukan 3 fasilitas.", time:"15 Nov"}]
+};
+let unread = {talent:2, company:1, verifier:2};
+
+const S = {
+  logged:true, role:"talent", view:"home", params:{},
+  saved:new Set(["j3"]),
+  filters:{q:"", mode:[], fac:[], fit:[], verified:false, needsOnly:false},
+  apply:{step:1, cv:"profile", acc:[], note:""},
+  thread:null, showNotif:false, loginRole:"talent",
+  a11y:{size:"normal", contrast:false, motion:false, simple:false},
+  me:"rina", myCo:"arunika"
+};
+
+/* ================= HELPERS ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ICONS = {"accessibility": "<circle cx=\"16\" cy=\"4\" r=\"1\" /> <path d=\"m18 19 1-7-6 1\" /> <path d=\"m5 8 3-3 5.5 3-2.36 3.5\" /> <path d=\"M4.24 14.5a5 5 0 0 0 6.88 6\" /> <path d=\"M13.76 17.5a5 5 0 0 0-6.88-6\" />", "arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "badge-check": "<path d=\"M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z\" /> <path d=\"m9 12 2 2 4-4\" />", "bath": "<path d=\"M10 4 8 6\" /> <path d=\"M17 19v2\" /> <path d=\"M2 12h20\" /> <path d=\"M7 19v2\" /> <path d=\"M9 5 7.621 3.621A2.121 2.121 0 0 0 4 5v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5\" />", "bell": "<path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\" /> <path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\" />", "bookmark": "<path d=\"m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z\" />", "briefcase": "<path d=\"M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\" /> <rect width=\"20\" height=\"14\" x=\"2\" y=\"6\" rx=\"2\" />", "building-2": "<path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z\" /> <path d=\"M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2\" /> <path d=\"M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2\" /> <path d=\"M10 6h4\" /> <path d=\"M10 10h4\" /> <path d=\"M10 14h4\" /> <path d=\"M10 18h4\" />", "calendar": "<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "captions": "<rect width=\"18\" height=\"14\" x=\"3\" y=\"5\" rx=\"2\" ry=\"2\" /> <path d=\"M7 15h4M15 15h2M7 11h2M13 11h4\" />", "car": "<path d=\"M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2\" /> <circle cx=\"7\" cy=\"17\" r=\"2\" /> <path d=\"M9 17h6\" /> <circle cx=\"17\" cy=\"17\" r=\"2\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "check-circle": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m9 12 2 2 4-4\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "clipboard-check": "<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "eye": "<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "file-text": "<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /> <path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /> <path d=\"M10 9H8\" /> <path d=\"M16 13H8\" /> <path d=\"M16 17H8\" />", "filter": "<polygon points=\"22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3\" />", "graduation-cap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "hand": "<path d=\"M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2\" /> <path d=\"M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2\" /> <path d=\"M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8\" /> <path d=\"M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15\" />", "history": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" /> <path d=\"M12 7v5l4 2\" />", "home": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "keyboard": "<path d=\"M10 8h.01\" /> <path d=\"M12 12h.01\" /> <path d=\"M14 8h.01\" /> <path d=\"M16 12h.01\" /> <path d=\"M18 8h.01\" /> <path d=\"M6 8h.01\" /> <path d=\"M7 16h10\" /> <path d=\"M8 12h.01\" /> <rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\" />", "laptop": "<path d=\"M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16\" />", "layout-dashboard": "<rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\" /> <rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\" /> <rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\" /> <rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\" />", "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "log-out": "<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\" /> <polyline points=\"16 17 21 12 16 7\" /> <line x1=\"21\" x2=\"9\" y1=\"12\" y2=\"12\" />", "map-pin": "<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\" /> <circle cx=\"12\" cy=\"10\" r=\"3\" />", "message-square": "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" />", "move-vertical": "<path d=\"M12 2v20\" /> <path d=\"m8 18 4 4 4-4\" /> <path d=\"m8 6 4-4 4 4\" />", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "search": "<circle cx=\"11\" cy=\"11\" r=\"8\" /> <path d=\"m21 21-4.3-4.3\" />", "search-x": "<path d=\"m13.5 8.5-5 5\" /> <path d=\"m8.5 8.5 5 5\" /> <circle cx=\"11\" cy=\"11\" r=\"8\" /> <path d=\"m21 21-4.3-4.3\" />", "send": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /> <path d=\"m21.854 2.147-10.94 10.939\" />", "upload": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"17 8 12 3 7 8\" /> <line x1=\"12\" x2=\"12\" y1=\"3\" y2=\"15\" />", "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />", "users": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" /> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /> <path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />", "volume-2": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "wallet": "<path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\" /> <path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />"};
+const ic = (n, cls="") => `<svg class="lucide ${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||""}</svg>`;
+const job = id => jobs.find(j => j.id === id);
+const co = id => companies[id];
+const facStatus = (cid, key) => (co(cid).facilities.find(f => f.key === key) || {}).status;
+const jobVerified = j => j.fac.every(k => facStatus(j.co, k) === "verified");
+function match(j, t){
+  const sk = j.skills.filter(s => t.skills.includes(s)).length / j.skills.length;
+  const nd = t.needs.length ? t.needs.filter(n => j.fac.includes(n) && facStatus(j.co, n) === "verified").length / t.needs.length : 1;
+  const md = t.pref.includes(j.mode) ? 1 : 0.4;
+  return Math.round(sk * 55 + nd * 30 + md * 15);
+}
+function statusPill(s){
+  const m = {Dikirim:"p-neutral",Ditinjau:"p-info",Interview:"p-warn",Diterima:"p-ok",Ditolak:"p-bad"};
+  return `<span class="pill ${m[s]}">${s}</span>`;
+}
+function verifPill(st){
+  return st === "verified" ? `<span class="pill p-ok">${ic("badge-check")} Terverifikasi</span>`
+       : st === "rejected" ? `<span class="pill p-bad">${ic("x")} Ditolak</span>`
+       : `<span class="pill p-warn">${ic("clock")} Menunggu verifikasi</span>`;
+}
+function logo(cid, size=46){ const c = co(cid); return `<div class="logo" style="background:${c.color};width:${size}px;height:${size}px">${c.name[0]}</div>`; }
+function avatar(tid){ const t = talents[tid]; return `<div class="av" style="background:${t.color}">${t.short}</div>`; }
+function toast(msg){
+  document.querySelectorAll(".toast").forEach(t => t.remove());
+  const el = document.createElement("div"); el.className = "toast"; el.setAttribute("role","status");
+  el.innerHTML = ic("check-circle") + esc(msg); document.body.appendChild(el); icons();
+  $("#live").textContent = msg;
+  setTimeout(() => el.remove(), 2800);
+}
+function notify(role, text){ notifs[role].unshift({text, time:"Baru saja"}); unread[role]++; }
+function now(){ const d = new Date(); return d.getDate()+" Nov, "+String(d.getHours()).padStart(2,"0")+"."+String(d.getMinutes()).padStart(2,"0"); }
+function icons(){}
+function go(view, params={}){ S.view = view; S.params = params; S.showNotif = false; render(); const c = $(".content"); if (c) c.scrollTop = 0; }
+
+/* ================= NAV ================= */
+const NAV = {
+  talent:[["home","Beranda","home"],["jobs","Cari Lowongan","search"],["applications","Lamaran Saya","file-text"],["saved","Tersimpan","bookmark"],["messages","Pesan","message-square"],["profile","Profil","user"],["settings","Aksesibilitas","accessibility"]],
+  company:[["c-home","Beranda","layout-dashboard"],["c-jobs","Lowongan","briefcase"],["c-candidates","Kandidat","users"],["c-facilities","Fasilitas","building-2"],["messages","Pesan","message-square"],["settings","Aksesibilitas","accessibility"]],
+  verifier:[["v-queue","Antrian Verifikasi","clipboard-check"],["v-done","Riwayat","history"],["settings","Aksesibilitas","accessibility"]]
+};
+const ROLE_LABEL = {talent:"Talenta", company:"Perusahaan", verifier:"Tim Verifikasi"};
+const parentOf = {job:"jobs", apply:"jobs", "c-newjob":"c-jobs", "c-candidate":"c-candidates", "v-review":"v-queue"};
+
+function counts(){
+  return {
+    applications: apps.filter(a => a.tal === S.me && a.status === "Interview").length,
+    "c-candidates": apps.filter(a => job(a.job).co === S.myCo && a.status === "Dikirim").length,
+    "v-queue": verifQueue.filter(v => v.status === "pending").length
+  };
+}
+
+function shell(inner, title){
+  const cur = parentOf[S.view] || S.view;
+  const cnt = counts();
+  const me = S.role === "talent" ? {n:talents[S.me].name, s:"Talenta", av:avatar(S.me)}
+           : S.role === "company" ? {n:co(S.myCo).name, s:"HRD · Perusahaan", av:logo(S.myCo,38)}
+           : {n:"Tim Verifikasi", s:"Access Job internal", av:`<div class="av" style="background:var(--cream);color:var(--ink)">TV</div>`};
+  return `<div class="app">
+  <aside class="side" aria-label="Menu utama">
+    <div class="brand"><div class="leaf" aria-hidden="true"></div><b>Access Job</b></div>
+    <div class="who">${me.av}<div><b class="small">${esc(me.n)}</b><small>${me.s}</small></div></div>
+    <nav class="nav">${NAV[S.role].map(([v,l,i]) => `<button data-nav="${v}" ${cur===v?'aria-current="page"':''}>${ic(i)}<span class="lbl">${l}</span>${cnt[v]?`<span class="count">${cnt[v]}</span>`:""}</button>`).join("")}</nav>
+    <div class="foot">
+      <label for="roleSel">Mode demo: ganti peran</label>
+      <select id="roleSel" aria-label="Ganti peran demo">${Object.keys(ROLE_LABEL).map(r=>`<option value="${r}" ${S.role===r?"selected":""}>${ROLE_LABEL[r]}</option>`).join("")}</select>
+      <div class="nav"><button data-action="logout">${ic("log-out")}<span class="lbl">Keluar</span></button></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <div><div class="crumb">${ROLE_LABEL[S.role]}</div><h2>${esc(title)}</h2></div>
+      <div class="sp"></div>
+      <button class="iconbtn" data-action="notif" aria-label="Notifikasi, ${unread[S.role]} belum dibaca" aria-expanded="${S.showNotif}">${ic("bell")}${unread[S.role]?`<span class="dot">${unread[S.role]}</span>`:""}</button>
+    </header>
+    ${S.showNotif ? `<div class="card drop" role="dialog" aria-label="Notifikasi">${notifs[S.role].map(n=>`<div class="n-item">${esc(n.text)}<div class="muted small">${n.time}</div></div>`).join("")}</div>` : ""}
+    <main class="content"><div class="wrap">${inner}</div></main>
+  </div></div>`;
+}
+
+/* ================= JOB CARD ================= */
+function jobCard(j, opts={}){
+  const c = co(j.co), m = match(j, talents[S.me]), ver = jobVerified(j);
+  const applied = apps.some(a => a.job === j.id && a.tal === S.me);
+  return `<article class="card job" data-open-job="${j.id}" tabindex="0" aria-label="${esc(j.title)} di ${esc(c.name)}">
+    ${logo(j.co)}
+    <div class="body">
+      <div class="row between"><span class="title">${esc(j.title)}</span>
+        <button class="savebtn" data-save="${j.id}" aria-pressed="${S.saved.has(j.id)}" aria-label="Simpan lowongan">${ic("bookmark")}</button></div>
+      <div class="meta"><span>${ic("building-2")}${esc(c.name)}</span><span>${ic("map-pin")}${esc(j.loc)} · ${j.mode}</span><span>${ic("wallet")}${j.salary}</span></div>
+      <div class="row" style="gap:6px">${ver?`<span class="pill p-ok">${ic("badge-check")} Aksesibilitas terverifikasi</span>`:`<span class="pill p-warn">${ic("clock")} Sebagian belum diverifikasi</span>`}
+        ${j.fac.slice(0, opts.full?8:3).map(k=>`<span class="chip">${ic(FAC[k].icon)}${FAC[k].label}</span>`).join("")}${!opts.full && j.fac.length>3?`<span class="chip">+${j.fac.length-3}</span>`:""}
+        ${applied?`<span class="pill p-info">Sudah dilamar</span>`:""}</div>
+    </div>
+    <div class="match" aria-label="Kecocokan ${m} persen"><b class="num">${m}%</b><small>cocok</small></div>
+  </article>`;
+}
+
+/* ================= TALENT VIEWS ================= */
+const V = {};
+V.home = () => {
+  const t = talents[S.me];
+  const rec = [...jobs].sort((a,b)=>match(b,t)-match(a,t)).slice(0,3);
+  const my = apps.filter(a=>a.tal===S.me);
+  const iv = my.find(a=>a.status==="Interview");
+  return shell(`
+  <section class="hello"><div class="col"><p class="small" style="opacity:.8">Selamat malam,</p><h1>Halo, ${esc(t.name.split(" ")[0])}</h1>
+    <p style="opacity:.85">Ada ${rec.length} lowongan baru yang cocok dengan skill dan kebutuhan aksesibilitasmu.</p></div>
+    <button class="btn" data-nav="jobs">${ic("search")} Cari lowongan</button></section>
+  <section class="grid g4">
+    <div class="card stat"><span class="muted small">Lamaran aktif</span><b class="num">${my.filter(a=>a.status!=="Ditolak").length}</b></div>
+    <div class="card stat"><span class="muted small">Jadwal interview</span><b class="num">${my.filter(a=>a.status==="Interview").length}</b></div>
+    <div class="card stat"><span class="muted small">Lowongan tersimpan</span><b class="num">${S.saved.size}</b></div>
+    <div class="card stat"><span class="muted small">Profil lengkap</span><b class="num">80%</b></div>
+  </section>
+  ${iv?`<section class="card row between"><div class="row">${ic("calendar")}<div><b>Interview ${esc(job(iv.job).title)} · ${esc(co(job(iv.job).co).name)}</b><div class="muted small">${esc(iv.interview||"")}</div></div></div><button class="btn ghost sm" data-nav="applications">Lihat detail</button></section>`:""}
+  <section class="col"><div class="sec-h"><h2>Rekomendasi untukmu</h2><button class="link" data-nav="jobs">Lihat semua</button></div>
+    ${rec.map(j=>jobCard(j)).join("")}</section>
+  <section class="col"><div class="sec-h"><h2>Lamaran terakhir</h2><button class="link" data-nav="applications">Semua lamaran</button></div>
+    <div class="card tablewrap"><table class="table"><thead><tr><th>Posisi</th><th>Perusahaan</th><th>Tanggal</th><th>Status</th></tr></thead><tbody>
+    ${my.map(a=>`<tr><td><b>${esc(job(a.job).title)}</b></td><td>${esc(co(job(a.job).co).name)}</td><td class="num">${a.date}</td><td>${statusPill(a.status)}</td></tr>`).join("")}
+    </tbody></table></div></section>`, "Beranda");
+};
+
+V.jobs = () => {
+  const f = S.filters, t = talents[S.me];
+  let list = jobs.filter(j => {
+    const q = f.q.toLowerCase();
+    if (q && !(j.title+" "+co(j.co).name+" "+j.skills.join(" ")).toLowerCase().includes(q)) return false;
+    if (f.mode.length && !f.mode.includes(j.mode)) return false;
+    if (f.fac.length && !f.fac.every(k => j.fac.includes(k))) return false;
+    if (f.verified && !jobVerified(j)) return false;
+    if (f.needsOnly && !t.needs.every(n => j.fac.includes(n) && facStatus(j.co,n)==="verified")) return false;
+    return true;
+  }).sort((a,b)=>match(b,t)-match(a,t));
+  const cb = (group, val, label) => `<label class="check"><input type="checkbox" data-filter="${group}" value="${val}" ${f[group].includes(val)?"checked":""}> ${label}</label>`;
+  return shell(`
+  <form class="searchbar" data-form="search" role="search"><label for="q" class="sr" style="position:absolute;left:-9999px">Cari</label>
+    <input id="q" class="input" placeholder="Cari posisi, perusahaan, atau skill" value="${esc(f.q)}"><button class="btn" type="submit">${ic("search")} Cari</button></form>
+  <div class="layout-search">
+    <aside class="card filters" aria-label="Filter">
+      <div class="row between"><h3>${ic("filter")} Filter</h3><button class="link" data-action="reset-filter">Reset</button></div>
+      <label class="check"><input type="checkbox" data-toggle="needsOnly" ${f.needsOnly?"checked":""}> <b>Sesuai kebutuhanku</b></label>
+      <p class="muted small" style="margin-top:-8px">Ramp dan toilet aksesibel, sudah diverifikasi.</p>
+      <label class="check"><input type="checkbox" data-toggle="verified" ${f.verified?"checked":""}> Hanya yang terverifikasi penuh</label>
+      <fieldset><legend>Cara kerja</legend>${["Remote","Hybrid","Onsite"].map(m=>cb("mode",m,m)).join("")}</fieldset>
+      <fieldset><legend>Fasilitas aksesibilitas</legend>${Object.keys(FAC).map(k=>cb("fac",k,FAC[k].label)).join("")}</fieldset>
+    </aside>
+    <section class="col" aria-live="polite">
+      <p class="muted small"><b class="num">${list.length}</b> lowongan, diurutkan dari yang paling cocok</p>
+      ${list.length ? list.map(j=>jobCard(j)).join("") : `<div class="card empty">${ic("search-x")}<b>Tidak ada lowongan yang cocok</b><span>Coba kurangi filter fasilitas.</span><button class="btn ghost sm" data-action="reset-filter">Reset filter</button></div>`}
+    </section>
+  </div>`, "Cari Lowongan");
+};
+
+V.job = () => {
+  const j = job(S.params.id), c = co(j.co), t = talents[S.me], m = match(j,t);
+  const applied = apps.find(a => a.job === j.id && a.tal === S.me);
+  const needsMet = t.needs.map(n => ({n, ok: j.fac.includes(n) && facStatus(j.co,n)==="verified"}));
+  return shell(`
+  <button class="link" data-nav="jobs">${ic("chevron-left")} Kembali ke pencarian</button>
+  <section class="card col" style="gap:14px">
+    <div class="row" style="gap:16px;align-items:flex-start">${logo(j.co,60)}
+      <div class="col" style="flex:1;gap:6px"><h1>${esc(j.title)}</h1>
+        <div class="meta"><span>${ic("building-2")}${esc(c.name)}</span><span>${ic("map-pin")}${esc(j.loc)} · ${j.mode}</span><span>${ic("wallet")}${j.salary} / bulan</span><span>${ic("briefcase")}${j.type}</span><span>${ic("clock")}${j.posted}</span></div></div>
+      <div class="match"><b class="num">${m}%</b><small>cocok</small></div></div>
+    <div class="row">
+      ${applied ? `<button class="btn" data-nav="applications">${ic("file-text")} Lihat status lamaran</button>` : `<button class="btn" data-action="start-apply" data-id="${j.id}">${ic("send")} Lamar sekarang</button>`}
+      <button class="btn ghost" data-save="${j.id}" aria-pressed="${S.saved.has(j.id)}">${ic("bookmark")} ${S.saved.has(j.id)?"Tersimpan":"Simpan"}</button>
+      <button class="btn ghost" data-action="msg-company" data-id="${j.co}">${ic("message-square")} Tanya HRD</button>
+    </div>
+  </section>
+  <div class="grid g2" style="grid-template-columns:1.4fr 1fr;align-items:start">
+    <div class="col" style="gap:16px">
+      <section class="card col"><h3>Deskripsi pekerjaan</h3><p>${esc(j.desc)}</p>
+        <h3 style="margin-top:8px">Kualifikasi</h3><ul class="req">${j.req.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>
+        <h3 style="margin-top:8px">Skill yang dicari</h3><div class="row" style="gap:6px">${j.skills.map(s=>`<span class="tag-skill">${t.skills.includes(s)?"✓ ":""}${esc(s)}</span>`).join("")}</div></section>
+      <section class="card col"><div class="row between"><h3>Foto fasilitas dari perusahaan</h3><span class="muted small">Dicek langsung oleh tim verifikasi</span></div>
+        <div class="fac-grid">${j.fac.map(k=>`<div class="col" style="gap:6px"><div class="photo">${ic(FAC[k].icon)}<span class="cap">${FAC[k].label}</span></div>${verifPill(facStatus(j.co,k))}</div>`).join("")}</div></section>
+    </div>
+    <div class="col" style="gap:16px">
+      <section class="card col"><h3>Cocok dengan kebutuhanmu?</h3>
+        ${needsMet.map(x=>`<div class="row">${x.ok?`<span class="pill p-ok">${ic("check")} Ada</span>`:`<span class="pill p-bad">${ic("x")} Belum ada</span>`}<span>${FAC[x.n].label}</span></div>`).join("")}
+        <p class="muted small">Cara kerja ${j.mode}${t.pref.includes(j.mode)?" sesuai preferensimu.":" belum sesuai preferensimu."}</p></section>
+      <section class="card col"><h3>Ramah untuk</h3><div class="row" style="gap:6px">${j.fit.map(x=>`<span class="chip">Disabilitas ${x.toLowerCase()}</span>`).join("")}</div></section>
+      <section class="card col"><div class="row">${logo(j.co,40)}<div><b>${esc(c.name)}</b><div class="muted small">${esc(c.city)}</div></div></div><p class="small">${esc(c.about)}</p></section>
+    </div>
+  </div>`, "Detail Lowongan");
+};
+
+V.apply = () => {
+  const j = job(S.params.id), t = talents[S.me], A = S.apply;
+  const stepper = `<div class="steps" aria-label="Langkah melamar">${["Data & CV","Kebutuhan akomodasi","Tinjau & kirim"].map((s,i)=>`${i?'<span class="step"><span class="bar"></span></span>':""}<span class="step ${A.step===i+1?"on":A.step>i+1?"done":""}"><span class="n">${A.step>i+1?"✓":i+1}</span>${s}</span>`).join("")}</div>`;
+  let body = "";
+  if (A.step === 1) body = `
+    <div class="grid g2"><div class="field"><label for="ap-name">Nama lengkap</label><input id="ap-name" class="input" value="${esc(t.name)}"></div>
+    <div class="field"><label for="ap-mail">Email</label><input id="ap-mail" class="input" value="rina.putri@email.com"></div>
+    <div class="field"><label for="ap-phone">No. HP</label><input id="ap-phone" class="input" value="0812 3456 7890"></div>
+    <div class="field"><label for="ap-city">Domisili</label><input id="ap-city" class="input" value="${esc(t.city)}"></div></div>
+    <fieldset class="col" style="border:none;padding:0"><legend style="font-weight:600;font-size:.84rem;margin-bottom:6px">CV</legend>
+      <label class="check"><input type="radio" name="cv" value="profile" ${A.cv==="profile"?"checked":""} data-cv> Pakai CV dari profil · <b>${esc(t.cv)}</b></label>
+      <label class="check"><input type="radio" name="cv" value="upload" ${A.cv!=="profile"?"checked":""} data-cv> Unggah CV baru</label>
+      ${A.cv!=="profile"?`<input type="file" id="cvfile" class="input" accept=".pdf,.doc,.docx" aria-label="Pilih file CV">${A.cvName?`<span class="muted small">Dipilih: ${esc(A.cvName)}</span>`:""}`:""}
+    </fieldset>
+    <div class="field"><label for="ap-letter">Pesan singkat untuk HRD (opsional)</label><textarea id="ap-letter" class="input" placeholder="Ceritakan kenapa kamu cocok untuk posisi ini">${esc(A.letter||"")}</textarea></div>`;
+  if (A.step === 2) body = `
+    <p class="muted">Pilih akomodasi yang kamu butuhkan saat interview dan bekerja. Perusahaan hanya melihat ini setelah kamu mengirim lamaran.</p>
+    <div class="grid g2">${Object.keys(FAC).map(k=>`<label class="check card" style="padding:12px"><input type="checkbox" data-acc value="${k}" ${A.acc.includes(k)?"checked":""}> ${ic(FAC[k].icon)} ${FAC[k].label} ${j.fac.includes(k)&&facStatus(j.co,k)==="verified"?`<span class="pill p-ok" style="margin-left:auto">Tersedia</span>`:""}</label>`).join("")}</div>
+    <div class="field"><label for="ap-note">Catatan akomodasi lain</label><textarea id="ap-note" class="input" placeholder="Contoh: interview online dengan teks otomatis">${esc(A.note)}</textarea></div>`;
+  if (A.step === 3) body = `
+    <div class="note">Cek lagi sebelum dikirim. Setelah dikirim, status lamaran bisa kamu pantau di menu Lamaran Saya.</div>
+    <div class="grid g2">
+      <div class="card col"><span class="muted small">Posisi</span><b>${esc(j.title)} · ${esc(co(j.co).name)}</b></div>
+      <div class="card col"><span class="muted small">CV</span><b>${esc(A.cv==="profile"?t.cv:(A.cvName||"CV baru"))}</b></div>
+      <div class="card col"><span class="muted small">Akomodasi</span><b>${A.acc.length?A.acc.map(k=>FAC[k].label).join(", "):"Tidak ada"}</b></div>
+      <div class="card col"><span class="muted small">Catatan</span><b>${esc(A.note||"-")}</b></div></div>
+    <label class="check"><input type="checkbox" id="agree" ${A.agree?"checked":""}> Saya setuju data profil saya dibagikan ke ${esc(co(j.co).name)} untuk lamaran ini.</label>`;
+  if (A.step === 4) return shell(`<section class="card success"><div class="big">${ic("check")}</div><h1>Lamaran terkirim</h1>
+    <p class="muted">Lamaranmu untuk <b>${esc(j.title)}</b> di ${esc(co(j.co).name)} sudah diterima. Kamu akan dapat notifikasi saat statusnya berubah.</p>
+    <div class="row" style="justify-content:center"><button class="btn" data-nav="applications">${ic("file-text")} Lihat status lamaran</button><button class="btn ghost" data-nav="jobs">Cari lowongan lain</button></div></section>`, "Lamar Pekerjaan");
+  return shell(`
+  <button class="link" data-action="open-job" data-id="${j.id}">${ic("chevron-left")} Kembali ke detail</button>
+  <section class="card col" style="gap:18px"><div class="row">${logo(j.co,40)}<div><b>${esc(j.title)}</b><div class="muted small">${esc(co(j.co).name)} · ${j.mode}</div></div></div>
+    ${stepper}<div class="col" style="gap:14px">${body}</div>
+    <div class="row between">${A.step>1?`<button class="btn ghost" data-action="apply-prev">Sebelumnya</button>`:"<span></span>"}
+      ${A.step<3?`<button class="btn" data-action="apply-next">Lanjut ${ic("chevron-right")}</button>`:`<button class="btn ok" data-action="apply-submit" ${A.agree?"":"disabled"}>${ic("send")} Kirim lamaran</button>`}</div>
+  </section>`, "Lamar Pekerjaan");
+};
+
+function timeline(a){
+  const failed = a.status === "Ditolak";
+  const idx = failed ? STATUSES.indexOf(Object.keys(a.history).filter(k=>k!=="Ditolak").pop()) : STATUSES.indexOf(a.status);
+  return `<div class="timeline" aria-label="Tahap lamaran">${STATUSES.map((s,i)=>{
+    const cls = i<idx ? "done" : i===idx ? (failed?"done":"cur") : (failed&&i===idx+1?"fail":"");
+    const label = failed&&i===idx+1 ? "Ditolak" : s;
+    const date = a.history[label] || "";
+    return `<div class="tl ${cls}"><div class="d"></div><span><b>${label}</b>${date?`<br>${date}`:""}</span></div>`;}).join("")}</div>`;
+}
+V.applications = () => {
+  const my = apps.filter(a=>a.tal===S.me);
+  return shell(`
+  <p class="muted">Pantau setiap tahap lamaranmu. Status berubah otomatis saat HRD memperbarui lamaran.</p>
+  ${my.length ? my.map(a=>{const j=job(a.job);return `<section class="card col">
+    <div class="row between"><div class="row">${logo(j.co,40)}<div><b>${esc(j.title)}</b><div class="muted small">${esc(co(j.co).name)} · dilamar ${a.date}</div></div></div>${statusPill(a.status)}</div>
+    ${timeline(a)}
+    ${a.interview&&a.status==="Interview"?`<div class="note">${ic("calendar")} <b>Jadwal interview:</b> ${esc(a.interview)}</div>`:""}
+    ${a.status==="Diterima"?`<div class="note">Selamat! ${esc(co(j.co).name)} menerima lamaranmu. HRD akan menghubungi lewat pesan.</div>`:""}
+    ${a.acc?`<p class="small muted">Akomodasi yang diminta: ${esc(a.acc)}</p>`:""}
+    <div class="row"><button class="btn ghost sm" data-action="open-job" data-id="${j.id}">Lihat lowongan</button><button class="btn ghost sm" data-action="msg-company" data-id="${j.co}">${ic("message-square")} Pesan HRD</button>
+    ${a.status==="Dikirim"||a.status==="Ditinjau"?`<button class="btn bad sm" data-action="withdraw" data-id="${a.id}">Tarik lamaran</button>`:""}</div>
+  </section>`}).join("") : `<div class="card empty">${ic("file-text")}<b>Belum ada lamaran</b><button class="btn" data-nav="jobs">Cari lowongan</button></div>`}`, "Lamaran Saya");
+};
+
+V.saved = () => {
+  const list = jobs.filter(j=>S.saved.has(j.id));
+  return shell(list.length ? list.map(j=>jobCard(j)).join("") : `<div class="card empty">${ic("bookmark")}<b>Belum ada lowongan tersimpan</b><span>Tekan ikon simpan di lowongan untuk menyimpannya di sini.</span><button class="btn" data-nav="jobs">Cari lowongan</button></div>`, "Tersimpan");
+};
+
+V.messages = () => {
+  const mine = S.role === "talent" ? threads.filter(t=>t.tal===S.me) : threads.filter(t=>t.co===S.myCo);
+  if (!S.thread || !mine.find(t=>t.id===S.thread)) S.thread = mine[0] && mine[0].id;
+  const th = mine.find(t=>t.id===S.thread);
+  const meSide = S.role === "talent" ? "tal" : "co";
+  const name = t => S.role === "talent" ? co(t.co).name : talents[t.tal].name;
+  const av = t => S.role === "talent" ? logo(t.co,38) : avatar(t.tal);
+  return shell(`<section class="card chat">
+    <div class="threads" role="list">${mine.map(t=>`<button class="thread" role="listitem" data-thread="${t.id}" aria-current="${t.id===S.thread}">${av(t)}<div class="t"><b class="small">${esc(name(t))}</b><p>${esc(t.msgs[t.msgs.length-1].text)}</p></div></button>`).join("")}</div>
+    <div class="conv">${th?`
+      <div class="row" style="padding:14px 18px;border-bottom:1px solid var(--line)">${av(th)}<b>${esc(name(th))}</b></div>
+      <div class="msgs" id="msgs">${th.msgs.map(m=>`<div class="bubble ${m.from===meSide?"me":""}">${esc(m.text)}<small>${m.time}</small></div>`).join("")}</div>
+      <form class="composer" data-form="msg"><label for="msgin" style="position:absolute;left:-9999px">Tulis pesan</label><input id="msgin" class="input" placeholder="Tulis pesan" autocomplete="off"><button class="btn" type="submit" aria-label="Kirim">${ic("send")}</button></form>`
+      : `<div class="empty">Belum ada percakapan.</div>`}</div>
+  </section>`, "Pesan");
+};
+
+V.profile = () => {
+  const t = talents[S.me];
+  return shell(`
+  <section class="card row" style="gap:18px">${avatar(S.me).replace('class="av"','class="av" style="width:72px;height:72px;font-size:1.3rem;background:'+t.color+'"')}
+    <div class="col" style="flex:1;gap:4px"><h1>${esc(t.name)}</h1><div class="meta"><span>${ic("map-pin")}${esc(t.city)}</span><span>${ic("graduation-cap")}${esc(t.edu)}</span></div></div>
+    <button class="btn ghost" data-action="edit-profile">${ic("pencil")} Ubah profil</button></section>
+  <div class="grid g2">
+    <section class="card col"><h3>Tentang saya</h3><p>${esc(t.about)}</p></section>
+    <section class="card col"><h3>Skill</h3><div class="row" style="gap:6px">${t.skills.map(s=>`<span class="tag-skill">${esc(s)}</span>`).join("")}</div>
+      <form class="row" data-form="skill"><label for="newskill" style="position:absolute;left:-9999px">Tambah skill</label><input id="newskill" class="input" style="flex:1" placeholder="Tambah skill, misal: Google Sheets"><button class="btn ghost sm" type="submit">${ic("plus")} Tambah</button></form></section>
+    <section class="card col"><div class="row between"><h3>Kebutuhan aksesibilitas</h3><span class="pill p-neutral">${ic("lock")} Privat</span></div>
+      <p class="small muted">Dipakai untuk mencocokkan lowongan. Hanya dibagikan ke perusahaan saat kamu melamar.</p>
+      <p class="small"><b>Ragam disabilitas:</b> ${esc(t.disab)}</p>
+      ${Object.keys(FAC).map(k=>`<label class="check"><input type="checkbox" data-need value="${k}" ${t.needs.includes(k)?"checked":""}> ${FAC[k].label}</label>`).join("")}</section>
+    <section class="card col"><h3>Preferensi kerja & CV</h3>
+      <div class="row" style="gap:6px">${["Remote","Hybrid","Onsite"].map(m=>`<label class="chip"><input type="checkbox" data-pref value="${m}" ${t.pref.includes(m)?"checked":""}> ${m}</label>`).join("")}</div>
+      <div class="row card" style="padding:12px;margin-top:6px">${ic("file-text")}<div style="flex:1"><b class="small">${esc(t.cv)}</b><div class="muted small">Diperbarui 2 Nov 2026</div></div><label class="btn ghost sm" for="cvup">${ic("upload")} Ganti</label><input id="cvup" type="file" accept=".pdf" style="position:absolute;left:-9999px" data-cvup></div></section>
+  </div>`, "Profil");
+};
+
+V.settings = () => {
+  const a = S.a11y;
+  const sw = (key, title, desc) => `<div class="toggle"><div><b>${title}</b><div class="muted small">${desc}</div></div><label class="switch"><input type="checkbox" data-a11y="${key}" ${a[key]?"checked":""} aria-label="${title}"><span></span></label></div>`;
+  return shell(`
+  <p class="muted">Atur tampilan supaya nyaman dipakai. Pengaturan langsung berlaku di seluruh aplikasi.</p>
+  <section class="card">
+    <div class="toggle"><div><b>Ukuran teks</b><div class="muted small">Perbesar huruf di semua halaman</div></div>
+      <div class="seg" role="group" aria-label="Ukuran teks">${[["normal","A"],["large","A+"],["xl","A++"]].map(([v,l])=>`<button data-size="${v}" aria-pressed="${a.size===v}">${l}</button>`).join("")}</div></div>
+    ${sw("contrast","Kontras tinggi","Warna hitam putih yang tegas untuk low vision")}
+    ${sw("motion","Kurangi animasi","Matikan efek gerak dan transisi")}
+    ${sw("simple","Mode ringkas","Sembunyikan info tambahan di kartu lowongan")}
+  </section>
+  <section class="card col"><h3>Dukungan lain</h3>
+    <div class="row">${ic("keyboard")}<span>Semua menu bisa dipakai dengan keyboard: Tab untuk pindah, Enter untuk memilih.</span></div>
+    <div class="row">${ic("volume-2")}<span>Struktur halaman memakai label yang terbaca screen reader (NVDA, TalkBack, VoiceOver).</span></div>
+    <div class="row">${ic("captions")}<span>Interview online disarankan memakai teks otomatis.</span></div></section>`, "Aksesibilitas");
+};
+
+/* ================= COMPANY VIEWS ================= */
+V["c-home"] = () => {
+  const c = co(S.myCo), myJobs = jobs.filter(j=>j.co===S.myCo), myApps = apps.filter(a=>job(a.job).co===S.myCo);
+  const ver = c.facilities.filter(f=>f.status==="verified");
+  return shell(`
+  <section class="hello"><div class="col"><p class="small" style="opacity:.8">Dashboard perusahaan</p><h1>${esc(c.name)}</h1>
+    <div class="row">${ver.length===c.facilities.length?`<span class="pill p-ok">${ic("badge-check")} Aksesibilitas terverifikasi</span>`:`<span class="pill p-warn">${ic("clock")} Ada fasilitas menunggu verifikasi</span>`}<span class="small" style="opacity:.85">${ver.length} dari ${c.facilities.length} fasilitas terverifikasi</span></div></div>
+    <button class="btn" data-nav="c-newjob">${ic("plus")} Pasang lowongan</button></section>
+  <section class="grid g4">
+    <div class="card stat"><span class="muted small">Lowongan aktif</span><b class="num">${myJobs.length}</b></div>
+    <div class="card stat"><span class="muted small">Total pelamar</span><b class="num">${myApps.length}</b></div>
+    <div class="card stat"><span class="muted small">Pelamar baru</span><b class="num">${myApps.filter(a=>a.status==="Dikirim").length}</b></div>
+    <div class="card stat"><span class="muted small">Interview</span><b class="num">${myApps.filter(a=>a.status==="Interview").length}</b></div>
+  </section>
+  <section class="col"><div class="sec-h"><h2>Kandidat terbaru</h2><button class="link" data-nav="c-candidates">Semua kandidat</button></div>
+    <div class="card tablewrap"><table class="table"><thead><tr><th>Kandidat</th><th>Posisi</th><th>Kecocokan</th><th>Status</th><th></th></tr></thead><tbody>
+    ${myApps.slice().reverse().slice(0,5).map(a=>{const t=talents[a.tal],j=job(a.job);return `<tr><td><div class="row">${avatar(a.tal)}<div><b>${esc(t.name)}</b><div class="muted small">${esc(t.disab)}</div></div></div></td><td>${esc(j.title)}</td><td class="num"><b>${match(j,t)}%</b></td><td>${statusPill(a.status)}</td><td><button class="btn ghost sm" data-action="open-cand" data-id="${a.id}">Lihat</button></td></tr>`}).join("")}
+    </tbody></table></div></section>
+  <section class="col"><div class="sec-h"><h2>Status fasilitas</h2><button class="link" data-nav="c-facilities">Kelola fasilitas</button></div>
+    <div class="row" style="gap:8px">${c.facilities.map(f=>`<span class="chip">${ic(FAC[f.key].icon)}${FAC[f.key].label} ${f.status==="verified"?"✓":"· menunggu"}</span>`).join("")}</div></section>`, "Beranda Perusahaan");
+};
+
+V["c-jobs"] = () => {
+  const myJobs = jobs.filter(j=>j.co===S.myCo);
+  return shell(`
+  <div class="row between"><p class="muted">Lowongan yang tampil di pencarian talenta.</p><button class="btn" data-nav="c-newjob">${ic("plus")} Pasang lowongan</button></div>
+  <div class="card tablewrap"><table class="table"><thead><tr><th>Posisi</th><th>Cara kerja</th><th>Gaji</th><th>Pelamar</th><th>Aksesibilitas</th><th></th></tr></thead><tbody>
+  ${myJobs.map(j=>`<tr><td><b>${esc(j.title)}</b><div class="muted small">${j.type} · ${j.posted}</div></td><td>${j.mode}</td><td class="num">${j.salary}</td><td class="num"><b>${apps.filter(a=>a.job===j.id).length}</b></td><td>${jobVerified(j)?`<span class="pill p-ok">${ic("badge-check")} Terverifikasi</span>`:`<span class="pill p-warn">Sebagian menunggu</span>`}</td><td><button class="btn ghost sm" data-action="cand-filter" data-id="${j.id}">Kandidat</button></td></tr>`).join("")}
+  </tbody></table></div>`, "Lowongan");
+};
+
+V["c-newjob"] = () => {
+  const c = co(S.myCo);
+  return shell(`
+  <button class="link" data-nav="c-jobs">${ic("chevron-left")} Kembali</button>
+  <form class="card col" style="gap:16px" data-form="newjob">
+    <div class="grid g2">
+      <div class="field"><label for="nj-title">Nama posisi</label><input id="nj-title" class="input" required placeholder="Contoh: Admin Keuangan"></div>
+      <div class="field"><label for="nj-type">Jenis</label><select id="nj-type" class="input"><option>Full-time</option><option>Kontrak</option><option>Magang</option></select></div>
+      <div class="field"><label for="nj-mode">Cara kerja</label><select id="nj-mode" class="input"><option>Remote</option><option>Hybrid</option><option>Onsite</option></select></div>
+      <div class="field"><label for="nj-sal">Rentang gaji</label><input id="nj-sal" class="input" placeholder="Rp4 – 5 jt"></div>
+    </div>
+    <div class="field"><label for="nj-desc">Deskripsi pekerjaan</label><textarea id="nj-desc" class="input" placeholder="Tugas utama posisi ini"></textarea></div>
+    <div class="field"><label for="nj-skills">Skill yang dicari (pisahkan dengan koma)</label><input id="nj-skills" class="input" placeholder="Excel, Komunikasi"></div>
+    <fieldset class="col" style="border:none;padding:0"><legend style="font-weight:600;font-size:.84rem;margin-bottom:6px">Fasilitas aksesibilitas di posisi ini</legend>
+      <p class="muted small">Hanya fasilitas terverifikasi yang mendapat badge. Fasilitas lain bisa diajukan di menu Fasilitas.</p>
+      <div class="grid g2">${c.facilities.map(f=>`<label class="check card" style="padding:12px"><input type="checkbox" name="njfac" value="${f.key}" checked> ${ic(FAC[f.key].icon)} ${FAC[f.key].label} <span style="margin-left:auto">${verifPill(f.status)}</span></label>`).join("")}</div></fieldset>
+    <div class="row"><button class="btn" type="submit">${ic("send")} Terbitkan lowongan</button><button class="btn ghost" type="button" data-nav="c-jobs">Batal</button></div>
+  </form>`, "Pasang Lowongan");
+};
+
+V["c-candidates"] = () => {
+  const jf = S.params.job || "";
+  const myJobs = jobs.filter(j=>j.co===S.myCo);
+  const list = apps.filter(a=>job(a.job).co===S.myCo && (!jf || a.job===jf)).sort((a,b)=>match(job(b.job),talents[b.tal])-match(job(a.job),talents[a.tal]));
+  return shell(`
+  <div class="row between"><p class="muted">Kandidat diurutkan dari kecocokan skill dan kebutuhan.</p>
+    <div class="field" style="min-width:240px"><label for="cf">Filter posisi</label><select id="cf" class="input" data-candfilter><option value="">Semua posisi</option>${myJobs.map(j=>`<option value="${j.id}" ${jf===j.id?"selected":""}>${esc(j.title)}</option>`).join("")}</select></div></div>
+  ${list.length?`<div class="card tablewrap"><table class="table"><thead><tr><th>Kandidat</th><th>Posisi</th><th>Kecocokan</th><th>Akomodasi</th><th>Status</th><th></th></tr></thead><tbody>
+  ${list.map(a=>{const t=talents[a.tal],j=job(a.job);return `<tr><td><div class="row">${avatar(a.tal)}<div><b>${esc(t.name)}</b><div class="muted small">${esc(t.edu)}</div></div></div></td><td>${esc(j.title)}<div class="muted small">${a.date}</div></td><td class="num"><b>${match(j,t)}%</b></td><td class="small" style="max-width:220px">${esc(a.acc||"-")}</td><td>${statusPill(a.status)}</td><td><button class="btn sm" data-action="open-cand" data-id="${a.id}">Tinjau</button></td></tr>`}).join("")}
+  </tbody></table></div>`:`<div class="card empty">${ic("users")}<b>Belum ada pelamar</b></div>`}`, "Kandidat");
+};
+
+V["c-candidate"] = () => {
+  const a = apps.find(x=>x.id===S.params.id), t = talents[a.tal], j = job(a.job);
+  const next = {Dikirim:"Ditinjau", Ditinjau:"Interview", Interview:"Diterima"}[a.status];
+  return shell(`
+  <button class="link" data-nav="c-candidates">${ic("chevron-left")} Kembali ke kandidat</button>
+  <section class="card row" style="gap:16px">${avatar(a.tal).replace('class="av"','class="av" style="width:64px;height:64px;font-size:1.15rem;background:'+t.color+'"')}
+    <div class="col" style="flex:1;gap:4px"><h1>${esc(t.name)}</h1><div class="meta"><span>${ic("briefcase")}Melamar ${esc(j.title)}</span><span>${ic("map-pin")}${esc(t.city)}</span><span>${ic("graduation-cap")}${esc(t.edu)}</span></div></div>
+    <div class="match"><b class="num">${match(j,t)}%</b><small>cocok</small></div></section>
+  <div class="grid g2" style="grid-template-columns:1.3fr 1fr;align-items:start">
+    <div class="col" style="gap:16px">
+      <section class="card col"><h3>Tahap lamaran</h3>${timeline(a)}
+        ${a.status!=="Diterima"&&a.status!=="Ditolak"?`
+        ${next==="Interview"?`<div class="field"><label for="ivtime">Jadwal interview</label><input id="ivtime" class="input" value="Kamis, 27 Nov 2026 · 10.00 WIB · Google Meet (teks otomatis aktif)"></div>`:""}
+        <div class="row"><button class="btn ok" data-action="advance" data-id="${a.id}">${ic("arrow-right")} ${next==="Ditinjau"?"Tandai sedang ditinjau":next==="Interview"?"Undang interview":"Terima kandidat"}</button>
+        <button class="btn bad" data-action="reject" data-id="${a.id}">Tolak</button>
+        <button class="btn ghost" data-action="msg-talent" data-id="${a.tal}">${ic("message-square")} Kirim pesan</button></div>`:`<div class="note">Proses lamaran selesai: ${statusPill(a.status)}</div>`}
+      </section>
+      <section class="card col"><h3>Tentang kandidat</h3><p>${esc(t.about)}</p>
+        <h3 style="margin-top:6px">Skill</h3><div class="row" style="gap:6px">${t.skills.map(s=>`<span class="tag-skill">${j.skills.includes(s)?"✓ ":""}${esc(s)}</span>`).join("")}</div>
+        <div class="row card" style="padding:12px;margin-top:6px">${ic("file-text")}<b class="small" style="flex:1">${esc(t.cv)}</b><button class="btn ghost sm" data-action="fake-cv">${ic("eye")} Lihat CV</button></div></section>
+    </div>
+    <div class="col" style="gap:16px">
+      <section class="card col"><h3>Akomodasi yang diminta</h3><p class="small">${esc(a.acc||"Tidak ada catatan khusus.")}</p>
+        ${t.needs.map(n=>`<div class="row">${facStatus(S.myCo,n)==="verified"?`<span class="pill p-ok">${ic("check")} Tersedia</span>`:`<span class="pill p-warn">Perlu disiapkan</span>`}<span class="small">${FAC[n].label}</span></div>`).join("")}</section>
+      <section class="card col"><h3>Ragam disabilitas</h3><p class="small">${esc(t.disab)}</p><p class="muted small">Dibagikan kandidat dengan izin untuk lamaran ini saja.</p></section>
+    </div></div>`, "Detail Kandidat");
+};
+
+V["c-facilities"] = () => {
+  const c = co(S.myCo);
+  const avail = Object.keys(FAC).filter(k=>!c.facilities.find(f=>f.key===k));
+  return shell(`
+  <p class="muted">Fasilitas yang terverifikasi mendapat badge di setiap lowongan. Tim Access Job mengecek foto dan dokumen sebelum memberi badge.</p>
+  <section class="fac-grid">${c.facilities.map(f=>`<div class="card col" style="gap:10px"><div class="photo">${f.img?`<img src="${f.img}" alt="Foto ${FAC[f.key].label}">`:ic(FAC[f.key].icon)}<span class="cap">${FAC[f.key].label}</span></div>
+    <div class="row between"><b class="small">${FAC[f.key].label}</b>${verifPill(f.status)}</div><span class="muted small">${f.status==="verified"?"Dicek "+f.date:"Diajukan, menunggu tim verifikasi"}</span></div>`).join("")}</section>
+  ${avail.length?`<form class="card col" style="gap:14px" data-form="addfac"><h3>Ajukan fasilitas baru</h3>
+    <div class="grid g2"><div class="field"><label for="af-key">Fasilitas</label><select id="af-key" class="input">${avail.map(k=>`<option value="${k}">${FAC[k].label}</option>`).join("")}</select></div>
+    <div class="field"><label for="af-photo">Foto fasilitas</label><input id="af-photo" type="file" accept="image/*" class="input"></div></div>
+    <div class="field"><label for="af-note">Keterangan</label><textarea id="af-note" class="input" placeholder="Lokasi, ukuran, atau dokumen pendukung"></textarea></div>
+    <div><button class="btn" type="submit">${ic("upload")} Kirim untuk verifikasi</button></div></form>`:""}`, "Fasilitas");
+};
+
+/* ================= VERIFIER VIEWS ================= */
+V["v-queue"] = () => {
+  const q = verifQueue.filter(v=>v.status==="pending");
+  return shell(`
+  <section class="grid g3">
+    <div class="card stat"><span class="muted small">Menunggu</span><b class="num">${q.length}</b></div>
+    <div class="card stat"><span class="muted small">Disetujui bulan ini</span><b class="num">${18+verifQueue.filter(v=>v.status==="approved").length}</b></div>
+    <div class="card stat"><span class="muted small">Rata-rata waktu cek</span><b class="num">1,6 hari</b></div></section>
+  ${q.length?q.map(v=>`<section class="card row between"><div class="row">${logo(v.co,44)}<div><b>${esc(co(v.co).name)}</b><div class="muted small">${v.items.map(k=>FAC[k].label).join(", ")} · ${v.photos} foto · diajukan ${v.submitted}</div></div></div>
+    <button class="btn" data-action="open-verif" data-id="${v.id}">Periksa</button></section>`).join(""):`<div class="card empty">${ic("clipboard-check")}<b>Antrian kosong</b><span>Semua pengajuan sudah diperiksa.</span></div>`}`, "Antrian Verifikasi");
+};
+V["v-done"] = () => {
+  const d = verifQueue.filter(v=>v.status!=="pending");
+  return shell(d.length?`<div class="card tablewrap"><table class="table"><thead><tr><th>Perusahaan</th><th>Fasilitas</th><th>Hasil</th></tr></thead><tbody>${d.map(v=>`<tr><td>${esc(co(v.co).name)}</td><td>${v.items.map(k=>FAC[k].label).join(", ")}</td><td>${v.status==="approved"?`<span class="pill p-ok">Disetujui</span>`:`<span class="pill p-bad">Ditolak</span>`}</td></tr>`).join("")}</tbody></table></div>`:`<div class="card empty">${ic("history")}<b>Belum ada riwayat di sesi ini</b><span>Setujui atau tolak pengajuan di Antrian Verifikasi.</span></div>`, "Riwayat Verifikasi");
+};
+V["v-review"] = () => {
+  const v = verifQueue.find(x=>x.id===S.params.id), c = co(v.co);
+  return shell(`
+  <button class="link" data-nav="v-queue">${ic("chevron-left")} Kembali ke antrian</button>
+  <section class="card row" style="gap:14px">${logo(v.co,56)}<div class="col" style="gap:2px;flex:1"><h1>${esc(c.name)}</h1><span class="muted small">${esc(c.city)} · diajukan ${v.submitted}</span></div></section>
+  <div class="note">${esc(v.note)}</div>
+  <section class="fac-grid">${v.items.map(k=>{const f=c.facilities.find(x=>x.key===k)||{};return `<div class="photo">${f.img?`<img src="${f.img}" alt="Foto ${FAC[k].label}">`:ic(FAC[k].icon)}<span class="cap">${FAC[k].label}</span></div>`}).join("")}</section>
+  <section class="card col"><h3>Checklist pemeriksaan</h3><div class="checklist">
+    ${["Foto jelas dan sesuai lokasi kantor","Ukuran ramp/pintu memenuhi standar (lebar min. 90 cm)","Dokumen pendukung lengkap","Sudah dicek lewat video call atau kunjungan"].map((x,i)=>`<label class="check"><input type="checkbox" data-vcheck> ${x}</label>`).join("")}</div>
+    <div class="field"><label for="vnote">Catatan untuk perusahaan</label><textarea id="vnote" class="input" placeholder="Opsional"></textarea></div>
+    <div class="row"><button class="btn ok" data-action="verif-ok" data-id="${v.id}">${ic("badge-check")} Setujui & beri badge</button><button class="btn bad" data-action="verif-no" data-id="${v.id}">Tolak</button></div></section>`, "Periksa Pengajuan");
+};
+
+/* ================= LOGIN ================= */
+function loginView(){
+  const r = S.loginRole;
+  const info = {talent:["Talenta","Cari kerja yang sesuai kebutuhanmu"],company:["Perusahaan","Pasang lowongan dan temukan talenta"],verifier:["Tim Verifikasi","Cek fasilitas perusahaan"]};
+  const mail = {talent:"rina.putri@email.com",company:"hrd@arunikadata.co.id",verifier:"verifikasi@accessjob.id"}[r];
+  return `<div class="login">
+    <section class="art"><div class="brand"><div class="leaf"></div><b>Access Job</b></div>
+      <div class="col" style="gap:14px;max-width:460px;position:relative"><h1>Kerja yang benar-benar bisa kamu akses.</h1>
+      <p style="opacity:.85">Lowongan dengan info aksesibilitas yang sudah dicek, dari perusahaan yang siap menerima talenta penyandang disabilitas.</p></div>
+      <p class="small" style="opacity:.7;position:relative">Prototipe Final Project · Kelompok 8 · BINUS 2026</p><div class="shape"></div></section>
+    <section class="form"><div class="col" style="gap:6px"><h1>Masuk</h1><p class="muted">Pilih peran untuk mencoba aplikasi.</p></div>
+      <div class="roles" role="group" aria-label="Pilih peran">${Object.keys(info).map(k=>`<button class="role" data-loginrole="${k}" aria-pressed="${r===k}"><b>${info[k][0]}</b><span class="muted">${info[k][1]}</span></button>`).join("")}</div>
+      <form class="col" style="gap:14px" data-form="login">
+        <div class="field"><label for="lg-mail">Email</label><input id="lg-mail" class="input" type="email" value="${mail}" required></div>
+        <div class="field"><label for="lg-pass">Kata sandi</label><input id="lg-pass" class="input" type="password" value="contoh123" required></div>
+        <button class="btn" type="submit" style="justify-content:center">Masuk sebagai ${info[r][0]}</button>
+        <p class="muted small" style="text-align:center">Belum punya akun? <button type="button" class="link" data-action="register">Daftar gratis</button></p>
+      </form></section></div>`;
+}
+
+/* ================= RENDER ================= */
+const TITLES = {};
+function render(){
+  const root = $("#root");
+  document.documentElement.style.fontSize = {normal:"100%",large:"112.5%",xl:"125%"}[S.a11y.size];
+  document.documentElement.dataset.contrast = S.a11y.contrast ? "high" : "";
+  document.documentElement.dataset.reduceMotion = S.a11y.motion;
+  document.body.classList.toggle("simple", S.a11y.simple);
+  root.innerHTML = S.logged ? (V[S.view] || V.home)() : loginView();
+  icons();
+  const m = $("#msgs"); if (m) m.scrollTop = m.scrollHeight;
+}
+const simpleStyle = document.createElement("style");
+simpleStyle.textContent = "body.simple .job .chip, body.simple .job .meta span:nth-child(3){display:none}";
+document.head.appendChild(simpleStyle);
+
+/* ================= EVENTS ================= */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-nav],[data-action],[data-save],[data-open-job],[data-thread],[data-size],[data-loginrole]");
+  if (!el) { if (S.showNotif && !e.target.closest(".drop")) { S.showNotif=false; render(); } return; }
+  if (el.dataset.save) { e.stopPropagation(); const id = el.dataset.save; S.saved.has(id) ? S.saved.delete(id) : S.saved.add(id); toast(S.saved.has(id)?"Lowongan disimpan":"Dihapus dari tersimpan"); render(); return; }
+  if (el.dataset.nav) { go(el.dataset.nav); return; }
+  if (el.dataset.openJob) { go("job",{id:el.dataset.openJob}); return; }
+  if (el.dataset.thread) { S.thread = el.dataset.thread; render(); return; }
+  if (el.dataset.size) { S.a11y.size = el.dataset.size; render(); toast("Ukuran teks diubah"); return; }
+  if (el.dataset.loginrole) { S.loginRole = el.dataset.loginrole; render(); return; }
+  const id = el.dataset.id;
+  switch (el.dataset.action) {
+    case "notif": S.showNotif = !S.showNotif; if (S.showNotif) unread[S.role] = 0; render(); break;
+    case "logout": S.logged = false; S.loginRole = S.role; render(); break;
+    case "register": toast("Pendaftaran: isi data diri, lalu kebutuhan aksesibilitas (demo)"); break;
+    case "reset-filter": S.filters = {q:"",mode:[],fac:[],fit:[],verified:false,needsOnly:false}; render(); break;
+    case "open-job": go("job",{id}); break;
+    case "start-apply": S.apply = {step:1, cv:"profile", acc:[...talents[S.me].needs].filter(k=>job(id).fac.includes(k)), note:"", agree:false}; go("apply",{id}); break;
+    case "apply-next": saveApplyFields(); S.apply.step++; render(); break;
+    case "apply-prev": saveApplyFields(); S.apply.step--; render(); break;
+    case "apply-submit": {
+      const j = job(S.params.id), A = S.apply;
+      const accTxt = [A.acc.map(k=>FAC[k].label).join(", "), A.note].filter(Boolean).join(". ");
+      apps.push({id:"a"+Date.now(), job:j.id, tal:S.me, status:"Dikirim", date:"18 Nov 2026", history:{Dikirim:"18 Nov"}, acc:accTxt});
+      if (!threads.find(t=>t.co===j.co && t.tal===S.me)) threads.push({id:"t"+Date.now(), co:j.co, tal:S.me, msgs:[{from:"co", text:`Terima kasih sudah melamar ${j.title}. Lamaranmu akan kami tinjau.`, time:now()}]});
+      if (j.co === S.myCo) notify("company", `${talents[S.me].name} melamar ${j.title}.`);
+      S.apply.step = 4; render(); toast("Lamaran berhasil dikirim"); break; }
+    case "withdraw": apps = apps.filter(a=>a.id!==id); toast("Lamaran ditarik"); render(); break;
+    case "msg-company": { let t = threads.find(t=>t.co===id && t.tal===S.me); if (!t) { t = {id:"t"+Date.now(), co:id, tal:S.me, msgs:[{from:"co",text:"Halo, ada yang bisa kami bantu soal lowongan ini?",time:now()}]}; threads.push(t);} S.thread = t.id; go("messages"); break; }
+    case "msg-talent": { let t = threads.find(t=>t.co===S.myCo && t.tal===id); if (!t) { t = {id:"t"+Date.now(), co:S.myCo, tal:id, msgs:[]}; t.msgs.push({from:"co",text:"Halo, terima kasih sudah melamar. Kami ingin menanyakan beberapa hal.",time:now()}); threads.push(t);} S.thread = t.id; go("messages"); break; }
+    case "edit-profile": toast("Mode ubah profil (demo)"); break;
+    case "fake-cv": toast("Membuka CV kandidat (demo)"); break;
+    case "open-cand": go("c-candidate",{id}); break;
+    case "cand-filter": go("c-candidates",{job:id}); break;
+    case "advance": {
+      const a = apps.find(x=>x.id===id); const next = {Dikirim:"Ditinjau", Ditinjau:"Interview", Interview:"Diterima"}[a.status];
+      if (next === "Interview") { const iv = $("#ivtime"); a.interview = iv ? iv.value : ""; }
+      a.status = next; a.history[next] = "18 Nov";
+      if (a.tal === S.me) notify("talent", `${co(job(a.job).co).name}: lamaran ${job(a.job).title} sekarang ${next}.`);
+      toast(`Status ${talents[a.tal].name} jadi ${next}`); render(); break; }
+    case "reject": { const a = apps.find(x=>x.id===id); a.status = "Ditolak"; a.history["Ditolak"] = "18 Nov";
+      if (a.tal === S.me) notify("talent", `${co(job(a.job).co).name}: lamaran ${job(a.job).title} tidak dilanjutkan.`);
+      toast("Kandidat ditolak"); render(); break; }
+    case "open-verif": go("v-review",{id}); break;
+    case "verif-ok": case "verif-no": {
+      const v = verifQueue.find(x=>x.id===id), ok = el.dataset.action === "verif-ok";
+      if (ok && document.querySelectorAll("[data-vcheck]:checked").length < 4) { toast("Centang semua checklist dulu sebelum menyetujui"); break; }
+      v.status = ok ? "approved" : "rejected";
+      co(v.co).facilities.forEach(f => { if (v.items.includes(f.key)) { f.status = ok ? "verified" : "rejected"; f.date = "18 Nov 2026"; } });
+      if (v.co === S.myCo) notify("company", ok ? "Fasilitas kamu sudah terverifikasi." : "Pengajuan fasilitas ditolak, cek catatan tim.");
+      toast(ok ? `${co(v.co).name} mendapat badge terverifikasi` : "Pengajuan ditolak"); go("v-queue"); break; }
+  }
+});
+document.addEventListener("keydown", e => {
+  const card = e.target.closest && e.target.closest("[data-open-job]");
+  if (card && (e.key === "Enter" || e.key === " ") && e.target === card) { e.preventDefault(); go("job",{id:card.dataset.openJob}); }
+  if (e.key === "Escape" && S.showNotif) { S.showNotif = false; render(); }
+});
+function saveApplyFields(){
+  const l = $("#ap-letter"); if (l) S.apply.letter = l.value;
+  const n = $("#ap-note"); if (n) S.apply.note = n.value;
+}
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "roleSel") { S.role = t.value; S.view = {talent:"home",company:"c-home",verifier:"v-queue"}[t.value]; S.params = {}; S.thread = null; render(); return; }
+  if (t.dataset.filter) { const arr = S.filters[t.dataset.filter]; t.checked ? arr.push(t.value) : arr.splice(arr.indexOf(t.value),1); render(); return; }
+  if (t.dataset.toggle) { S.filters[t.dataset.toggle] = t.checked; render(); return; }
+  if (t.hasAttribute("data-cv")) { saveApplyFields(); S.apply.cv = t.value; render(); return; }
+  if (t.id === "cvfile" && t.files[0]) { S.apply.cvName = t.files[0].name; saveApplyFields(); render(); return; }
+  if (t.hasAttribute("data-acc")) { const a = S.apply.acc; t.checked ? a.push(t.value) : a.splice(a.indexOf(t.value),1); return; }
+  if (t.id === "agree") { S.apply.agree = t.checked; saveApplyFields(); render(); return; }
+  if (t.hasAttribute("data-need")) { const n = talents[S.me].needs; t.checked ? n.push(t.value) : n.splice(n.indexOf(t.value),1); toast("Kebutuhan aksesibilitas disimpan"); return; }
+  if (t.hasAttribute("data-pref")) { const p = talents[S.me].pref; t.checked ? p.push(t.value) : p.splice(p.indexOf(t.value),1); toast("Preferensi disimpan"); return; }
+  if (t.hasAttribute("data-cvup") && t.files[0]) { talents[S.me].cv = t.files[0].name; toast("CV diperbarui"); render(); return; }
+  if (t.dataset.a11y) { S.a11y[t.dataset.a11y] = t.checked; render(); toast("Pengaturan diterapkan"); return; }
+  if (t.hasAttribute("data-candfilter")) { go("c-candidates",{job:t.value}); return; }
+});
+document.addEventListener("submit", e => {
+  e.preventDefault();
+  const f = e.target.dataset.form;
+  if (f === "search") { S.filters.q = $("#q").value; render(); }
+  if (f === "login") { S.logged = true; S.role = S.loginRole; S.view = {talent:"home",company:"c-home",verifier:"v-queue"}[S.role]; render(); toast("Berhasil masuk"); }
+  if (f === "msg") {
+    const inp = $("#msgin"), text = inp.value.trim(); if (!text) return;
+    const th = threads.find(t=>t.id===S.thread), side = S.role === "talent" ? "tal" : "co";
+    th.msgs.push({from:side, text, time:now()}); render();
+    setTimeout(() => {
+      th.msgs.push(side === "tal" ? {from:"co", text:"Terima kasih, pesanmu sudah kami terima. HRD akan membalas di jam kerja.", time:now()} : {from:"tal", text:"Baik, terima kasih atas informasinya.", time:now()});
+      if (S.view === "messages") render();
+    }, 1200);
+    setTimeout(() => { const i = $("#msgin"); if (i) i.focus(); }, 0);
+  }
+  if (f === "skill") { const v = $("#newskill").value.trim(); if (v) { talents[S.me].skills.push(v); toast("Skill ditambahkan"); render(); } }
+  if (f === "newjob") {
+    const title = $("#nj-title").value.trim(); if (!title) return;
+    const fac = [...document.querySelectorAll('input[name="njfac"]:checked')].map(x=>x.value);
+    jobs.unshift({id:"j"+Date.now(), title, co:S.myCo, mode:$("#nj-mode").value, loc:co(S.myCo).city, salary:$("#nj-sal").value||"Dirahasiakan", type:$("#nj-type").value, posted:"Baru saja",
+      fac, skills:$("#nj-skills").value.split(",").map(s=>s.trim()).filter(Boolean).concat([]).slice(0,6).length?$("#nj-skills").value.split(",").map(s=>s.trim()).filter(Boolean):["Komunikasi"],
+      fit:["Fisik","Netra","Tuli"], desc:$("#nj-desc").value||"Deskripsi akan segera diperbarui.", req:["Detail kualifikasi menyusul"]});
+    toast("Lowongan diterbitkan dan tampil di pencarian talenta"); go("c-jobs");
+  }
+  if (f === "addfac") {
+    const key = $("#af-key").value, file = $("#af-photo").files[0], note = $("#af-note").value;
+    const push = img => {
+      co(S.myCo).facilities.push({key, status:"pending", date:"-", img});
+      verifQueue.push({id:"v"+Date.now(), co:S.myCo, items:[key], submitted:"18 Nov 2026", photos:file?1:0, status:"pending", note:note||"Pengajuan fasilitas baru."});
+      notify("verifier", `${co(S.myCo).name} mengajukan ${FAC[key].label}.`);
+      toast("Terkirim ke tim verifikasi"); render();
+    };
+    if (file) { const r = new FileReader(); r.onload = () => push(r.result); r.readAsDataURL(file); } else push(null);
+  }
+});
+render();
+</script>
+</body>
+</html>
